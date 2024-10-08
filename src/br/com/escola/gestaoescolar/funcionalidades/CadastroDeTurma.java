@@ -15,19 +15,7 @@ import java.util.List;
 
 public class CadastroDeTurma {
 
-    private Path arquivo;
     private TurmaDao turmaDao = new TurmaDao();
-
-    public CadastroDeTurma() {
-        try {
-            this.arquivo = Path.of("turmas.csv");
-            if (!Files.exists(arquivo)) {
-                Files.createFile(arquivo);
-            }
-        } catch (Exception e) {
-            System.out.println("Erro ao criar arquivo de turmas!");
-        }
-    }
 
     public void cadastrar(String codigo, LocalDate dataInicio, LocalDate dataFim, Periodo periodo, String codigoCurso) {
         //validacoes

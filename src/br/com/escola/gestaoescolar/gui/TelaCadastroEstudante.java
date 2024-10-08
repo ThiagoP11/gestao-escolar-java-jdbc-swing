@@ -8,6 +8,8 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class TelaCadastroEstudante extends JPanel {
 
@@ -16,9 +18,12 @@ public class TelaCadastroEstudante extends JPanel {
     private JTextField campoEndereco;
     private JTextField campoCpf;
     private JTextField campoEmail;
+    private JTextField campoData;
     private JTable tabela;
     private String cpfEstudanteEdicao;
+    private String idEstudanteEdicao;
     private Font fonte = new Font("Arial", Font.BOLD, 16);
+    private DateTimeFormatter mascara = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private CadastroDeEstudante cadastroDeEstudante = new CadastroDeEstudante();
 
@@ -65,6 +70,11 @@ public class TelaCadastroEstudante extends JPanel {
         var labelEmail = new JLabel("Email:");
         labelEmail.setFont(this.fonte);
         painel.add(labelEmail, gbc);
+        gbc.gridy++;
+
+        var labelData = new JLabel("Data de Nascimento");
+        labelData.setFont(this.fonte);
+        painel.add(labelData, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 0;
@@ -94,6 +104,11 @@ public class TelaCadastroEstudante extends JPanel {
         this.campoEmail = new JTextField(20);
         this.campoEmail.setFont(this.fonte);
         painel.add(this.campoEmail, gbc);
+        gbc.gridy++;
+
+        this.campoData = new JTextField(20);
+        this.campoData.setFont(this.fonte);
+        painel.add(this.campoData, gbc);
 
         gbc.gridy++;
         gbc.gridx = 0;
@@ -139,7 +154,16 @@ public class TelaCadastroEstudante extends JPanel {
                 return;
             }
 
-            var estudante = new Estudante(nome, telefone, endereco, cpf, email);
+            var data = this.campoData.getText();
+            if (data.isBlank()) {
+                JOptionPane.showMessageDialog(this, "Data de Nascimento é obrigatório!", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            var dataNascimento = LocalDate.parse(data, mascara);
+
+
+            var estudante = new Estudante(nome, telefone, endereco, cpf, email, dataNascimento);
 
             if (cpfEstudanteEdicao != null) {
                 this.cadastroDeEstudante.atualizar(this.cpfEstudanteEdicao, estudante);
@@ -162,16 +186,17 @@ public class TelaCadastroEstudante extends JPanel {
         this.campoEndereco.setText("");
         this.campoCpf.setText("");
         this.campoEmail.setText("");
+        this.campoData.setText("");
         this.cpfEstudanteEdicao = null;
     }
 
     private void desenharTabela(JPanel painel) {
         var estudantes = this.cadastroDeEstudante.listar();
         var dadosEstudantesParaTabela = estudantes.stream()
-                .map(estudante -> new Object[]{estudante.getNome(), estudante.getTelefone(), estudante.getEndereco(), estudante.getCpf(), estudante.getEmail()})
+                .map(estudante -> new Object[]{estudante.getNome(), estudante.getTelefone(), estudante.getEndereco(), estudante.getCpf(), estudante.getEmail(), estudante.getDataNascimento()})
                 .toArray(Object[][]::new);
 
-        var tableModel = new DefaultTableModel(dadosEstudantesParaTabela, new String[]{"Nome", "Telefone", "Endereço", "CPF", "Email"}) {
+        var tableModel = new DefaultTableModel(dadosEstudantesParaTabela, new String[]{"Nome", "Telefone", "Endereço", "CPF", "Email", "Data"}) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -205,7 +230,7 @@ public class TelaCadastroEstudante extends JPanel {
 
         var estudantes = new CadastroDeEstudante().listar();
         var dadosEstudantes = estudantes.stream()
-                .map(estudante -> new Object[]{estudante.getNome(), estudante.getTelefone(), estudante.getEndereco(), estudante.getCpf(), estudante.getEmail()})
+                .map(estudante -> new Object[]{estudante.getNome(), estudante.getTelefone(), estudante.getEndereco(), estudante.getCpf(), estudante.getEmail(), estudante.getDataNascimento()})
                 .toArray(Object[][]::new);
 
         for (Object[] row : dadosEstudantes) {
@@ -225,6 +250,7 @@ public class TelaCadastroEstudante extends JPanel {
                 this.campoEndereco.setText(tabela.getValueAt(linhaClicada, 2).toString());
                 this.campoCpf.setText(tabela.getValueAt(linhaClicada, 3).toString());
                 this.campoEmail.setText(tabela.getValueAt(linhaClicada, 4).toString());
+                this.campoData.setText(tabela.getValueAt(linhaClicada, 5).toString());
                 this.cpfEstudanteEdicao = this.campoCpf.getText();
             }
         });
